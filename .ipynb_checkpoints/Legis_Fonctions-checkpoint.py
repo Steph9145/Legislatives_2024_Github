@@ -70,7 +70,7 @@ def infos_DF(DF):
         Text_message("Le Dataframe contient {} doublon(s)".format(doublons.shape[0]))
         
 
-# _______________________________________________________ Classement des listes par le score _________________________________________ 
+# _______________________________________________________ Classement des listes par le score Législatives _________________________________________ 
 def top_Nb_listes(data, Nb_Lists= 19):
     # Création des listes des colonnes de voix et des listes correspondantes
     voix_columns = [col for col in data.columns if col.startswith("Candidat") and col.endswith("_RapportExprimes")]
@@ -300,3 +300,83 @@ def Carte_Resultats(geo_df, Resultats_Visuel, Zoom=6, sauv='off'):
 
     
     return m
+
+# _______________________________________________________ Classement des listes par le score Européennes _________________________________________ 
+def TopList_Europ(data, Nb_Lists = 5):
+    # Création des listes des colonnes de voix et des listes correspondantes
+    voix_columns = [col for col in data.columns if col.startswith("% Voix/exprimés")]
+    Listes_columns = ['Libellé abrégé de liste ' + col.split()[2] for col in voix_columns]
+
+    # Vérification que les colonnes existent
+    assert all(col in data.columns for col in voix_columns), "Certaines colonnes de voix sont manquantes dans le DataFrame."
+    assert all(col in data.columns for col in Listes_columns), "Certaines colonnes de listes sont manquantes dans le DataFrame."
+
+    # Fonction pour obtenir les 4 listes ayant obtenues le plus de voix
+    def Top_Listes(row):
+        # Combiner les listes et les voix en paires
+        votes_result = [(row[Listes], row[Voix]) for Listes, Voix in zip(Listes_columns, voix_columns)]
+        # Trier les %votes par ordre décroissant et prendre les 4 premiers
+        top_4 = sorted(votes_result, key=lambda x: x[1], reverse=True)[:Nb_Lists]
+        # Réorganiser pour l'alternance Liste, %Voix
+        alternated = []
+        for Listes, Voix in top_4:
+            alternated.extend([Listes, Voix])
+        return pd.Series(alternated)
+
+    # Appliquer la fonction sur le DataFrame
+    top_4_results = data.apply(Top_Listes, axis=1)
+
+    # Générer les noms des colonnes alternées Parti, Voix
+    column_names = []
+    for i in range(len(top_4_results.columns) // 2):
+        column_names.append(f'Liste{i+1}')
+        column_names.append(f'% Voix Liste{i+1}')
+    top_4_results.columns = column_names
+
+    # Conserver les 18 premières colonnes du DataFrame original
+    columns_conserve = data.iloc[:, :18]
+
+    # Concaténer les résultats
+    Resultat = pd.concat([columns_conserve, top_4_results], axis=1)
+
+    # Sélection des colonnes numériques utilisant une expression régulière
+    colonnes_numeriques = [col for col in Resultat.columns if col.startswith('% Voix Liste')]
+    # Création de la colonne 'somme' en additionnant les valeurs des colonnes numériques
+    Resultat['somme'] = Resultat[colonnes_numeriques].sum(axis=1)
+    Resultat = Resultat.sort_values(by="somme", ascending=True)
+
+    return Resultat
+
+
+# ___________________________________________________ Classement des listes par le score Législatives 2022 _________________________________________ 
+def top_Legis2022(data, Nb_Lists = 3):
+    # Création des listes des colonnes de voix et des listes correspondantes
+    voix_columns = [col for col in data.columns if col.endswith("% Voix/Exp")]
+
+    # Fonction pour obtenir les Nb_Lists listes ayant obtenues le plus de voix
+    def Top_Listes(row):
+        # Création d'une liste de tuples (nom de colonne, valeur)
+        votes_result = [(col, row[col]) for col in voix_columns]
+        # Tri par valeur décroissante et sélection des 3 premiers
+        top_3 = sorted(votes_result, key=lambda x: x[1], reverse=True)[:Nb_Lists]
+        # Extraire les noms de colonnes des 3 meilleurs
+        top_3_colnames = [col for col, val in top_3]
+        # Extraire les valeurs des 3 meilleurs
+        top_3_values = [val for col, val in top_3]
+        # Combiner les noms de colonnes et les valeurs dans un dictionnaire
+        result = {}
+        for i in range(Nb_Lists):
+            result[f"Top_{i+1}_List"] = top_3_colnames[i]
+            result[f"Top_{i+1}_%"] = top_3_values[i]
+        return pd.Series(result)
+       
+    # Appliquer la fonction sur le DataFrame
+    top_3_results = data.apply(Top_Listes, axis=1)
+
+    # Conserver les 15 premières colonnes du DataFrame original
+    columns_conserve = data.iloc[:, :15]
+
+    # Concaténer les résultats
+    Resultat = pd.concat([columns_conserve, top_3_results], axis=1)
+
+    return Resultat
