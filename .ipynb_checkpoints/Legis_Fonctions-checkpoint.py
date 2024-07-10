@@ -351,7 +351,8 @@ def TopList_Europ(data, Nb_Lists = 5):
 # ___________________________________________________ Classement des listes par le score Législatives 2022 _________________________________________ 
 def top_Legis2022(data, Nb_Lists = 3):
     # Création des listes des colonnes de voix et des listes correspondantes
-    voix_columns = [col for col in data.columns if col.endswith("% Voix/Exp")]
+    #voix_columns = [col for col in data.columns if col.endswith("% Voix/Exp")]
+    voix_columns = [col for col in data.columns if col.endswith("% Voix/Exp") or col.startswith("%VOIX")]
 
     # Fonction pour obtenir les Nb_Lists listes ayant obtenues le plus de voix
     def Top_Listes(row):
