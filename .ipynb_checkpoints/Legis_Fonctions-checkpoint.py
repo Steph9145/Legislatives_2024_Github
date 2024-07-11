@@ -140,9 +140,9 @@ def style_function(feature):
         'UXD': '#230B9A', # Bleu foncé
         'EXD': '#0B0044', # Noir
         'REG': '#E8E37B', # Jaune
-        'DVG': '#FF7B7B', # Rose
-        'SOC': '#E8E37B', # Rose
-        'HOR': '#C76F03', # Orange
+        'DVG': '#D73B3B', # Rose
+        'SOC': '#CD426C', # Rose
+        'HOR': '#CEA345', # Orange
         'UDI': '#A35F0B', # Orange
         'DVD': '#545B89', # Bleu
         'ECO': '#1FFF3D', # Vert
@@ -155,7 +155,28 @@ def style_function(feature):
         'weight': 0.5,
         'dashArray': None
     }
-     
+# _______________________________________ Fonction pour assigner des couleurs en fonction des valeurs de 'Elu' 1er Tour _______________________________      
+def style_function1erT(feature):
+    Elu = feature['properties']['Elu']
+    colors = {
+        'RN': '#1D02A7', # Bleu très foncé
+        'Union des Gauche': '#E00000', # Rouge 
+        'Renaissance-Ensemble': '#FF9A1F', # Violet
+        'Union Ext Droite': '#6243FF', # Bleu foncé
+        'Extrême Droite': '#0B0044', # Noir
+        'Régionaliste': '#E8E37B', # Jaune
+        'Divers Gauche': '#D73B3B', # Rose
+        'Parti Socialiste': '#CD426C', # Rose
+        'Horizons': '#CEA345', # Violet
+        'Divers Centre': '#3C1CDB', # Bleu
+    }
+    return {
+        'fillColor': colors.get(Elu, '#ffffff'),  # Couleur par défaut blanche si non trouvée
+        'fillOpacity': 1, 
+        'color': 'black',
+        'weight': 0.5,
+        'dashArray': None
+    }
 
 
 # ___________________________________________ Fonction pour centrer la carte sur une région spécifique ___________________________________
@@ -243,8 +264,8 @@ def Carte_Resultats(geo_df, Resultats_Visuel, Zoom=6, sauv='off'):
     <i style="background: #A35F0B; width: 18px; height: 18px; display: inline-block;"></i> UDI<br>
     <i style="background: #AA783B; width: 18px; height: 18px; display: inline-block;"></i> DVC<br>
     <i style="background: #E00000; width: 18px; height: 18px; display: inline-block;"></i> Union des Gauche<br>
-    <i style="background: #FF7B7B; width: 18px; height: 18px; display: inline-block;"></i> DVG<br>
-    <i style="background: #FF7B7B; width: 18px; height: 18px; display: inline-block;"></i> SOC<br>
+    <i style="background: #D73B3B; width: 18px; height: 18px; display: inline-block;"></i> DVG<br>
+    <i style="background: #CD426C; width: 18px; height: 18px; display: inline-block;"></i> SOC<br>
     <i style="background: #1FFF3D; width: 18px; height: 18px; display: inline-block;"></i> ECO<br>
     <i style="background: #E8E37B; width: 18px; height: 18px; display: inline-block;"></i> Régionaliste<br>
     </div>
@@ -301,6 +322,97 @@ def Carte_Resultats(geo_df, Resultats_Visuel, Zoom=6, sauv='off'):
     
     return m
 
+# ___________________________________________ Fonction pour centrer la carte sur une région spécifique 1er TOUR  ___________________________________
+def Carte_Results_1erT(geo_df, Resultats_Visuel, Zoom=6, sauv='off'):
+    # Initialiser la carte centrée sur la France
+    m = folium.Map(location=[46.60, 1.89], zoom_start=6, tiles='Stamen Terrain')
+
+    # Ajouter les données géographiques à la carte
+    geojson = GeoJson(
+        geo_df,
+        style_function=style_function1erT,
+        tooltip=GeoJsonTooltip(
+        fields=['Libellé département', 'codeCirconscription', 'Elu', '% Votes','Second','% Votes2','Troisième','% Votes3'],
+        aliases=['Département: ', 'Circonscription: ', 'Elu: ', 'Votes (%): ', 'Liste2: ', 'Votes (%): ', 'Liste3: ', 'Votes (%): '],
+        localize=True
+        )
+    ).add_to(m)
+    # Création de la légende
+    legend_html = '''
+    <div style="
+        position: fixed; 
+        bottom: 50px; 
+        left: 50px; 
+        width: 200px; 
+        height: auto; 
+        border:2px solid grey; 
+        z-index:9999; 
+        font-size:14px;
+        background-color:white; 
+        opacity: 0.8;
+        padding: 10px;
+    ">
+    <b>Légende</b><br>
+    <b></b><br>
+    <i style="background: #1D02A7; width: 18px; height: 18px; display: inline-block;"></i> RN<br>
+    <i style="background: #E00000; width: 18px; height: 18px; display: inline-block;"></i> Union des Gauche<br>
+    <i style="background: #FF9A1F; width: 18px; height: 18px; display: inline-block;"></i> Renaissance-Ensemble<br>
+    <i style="background: #6243FF; width: 18px; height: 18px; display: inline-block;"></i> Union Ext Droite<br>
+    <i style="background: #0B0044; width: 18px; height: 18px; display: inline-block;"></i> Extrême Droite<br>
+    <i style="background: #E8E37B; width: 18px; height: 18px; display: inline-block;"></i> Régionaliste<br>
+    </div>
+    '''
+    # Ajout de la légende à la carte en tant qu'élément HTML
+    legend_element = Element(legend_html)
+    m.get_root().html.add_child(legend_element)
+
+    # Création de la note 'Résultats Nationaux par Listes'
+    note_html = '''
+    <div style="
+        position: fixed;
+        bottom: 50px;
+        right: 100px;
+        width: 250px;
+        height: auto;
+        border:2px solid grey;
+        z-index:9999; 
+        font-size:14px;
+        background-color:white; 
+        opacity: 0.8;
+        padding: 10px;">
+    RN & Unions:  33.14 %<br>
+    Union des Gauches:  27.64 %<br>
+    Ensemble / Renaissance:  21.88 %
+    </div>
+    '''
+    # Ajout de la Note en tant qu'élément HTML
+    note_element = Element(note_html)
+    m.get_root().html.add_child(note_element)
+
+    # Créer le HTML pour le titre
+    title_html = '''
+    <h3 style="position: fixed; 
+        top: 10px; 
+        left: 50%; 
+        transform: translateX(-50%);
+        z-index:9999; 
+        font-size:20px;
+        background-color:white; 
+        padding: 10px;
+        border: 2px solid grey;
+        opacity: 0.8;">
+    Prévisions Résultats 1er Tour
+    </h3>
+    '''
+
+    # Ajouter le titre à la carte en tant qu'élément HTML
+    title_element = Element(title_html)
+    m.get_root().html.add_child(title_element)
+    # Afficher la carte
+    m.save('Projections_Results_Legis1Tour.html')
+    
+    return m
+
 # _______________________________________________________ Classement des listes par le score Européennes _________________________________________ 
 def TopList_Europ(data, Nb_Lists = 5):
     # Création des listes des colonnes de voix et des listes correspondantes
@@ -349,35 +461,37 @@ def TopList_Europ(data, Nb_Lists = 5):
 
 
 # ___________________________________________________ Classement des listes par le score Législatives 2022 _________________________________________ 
-def top_Legis2022(data, Nb_Lists = 3):
+def top_Legis2022(data, Nb_Lists = 3,AN = 0):
     # Création des listes des colonnes de voix et des listes correspondantes
-    #voix_columns = [col for col in data.columns if col.endswith("% Voix/Exp")]
-    voix_columns = [col for col in data.columns if col.endswith("% Voix/Exp") or col.startswith("%VOIX")]
+    voix_columns = [col for col in data.columns if col.startswith("%VOIX")]
 
+    if AN != 22:
+        voix_columns = [col for col in data.columns if col.endswith("% Voix/Exp") or col.startswith("%VOIX25% ")]
+        
     # Fonction pour obtenir les Nb_Lists listes ayant obtenues le plus de voix
     def Top_Listes(row):
         # Création d'une liste de tuples (nom de colonne, valeur)
-        votes_result = [(col, row[col]) for col in voix_columns]
+        votes_result = [(col, row[col]) for col in voix_columns if not pd.isna(row[col])]
         # Tri par valeur décroissante et sélection des 3 premiers
-        top_3 = sorted(votes_result, key=lambda x: x[1], reverse=True)[:Nb_Lists]
+        top_n = sorted(votes_result, key=lambda x: x[1], reverse=True)[:Nb_Lists]
         # Extraire les noms de colonnes des 3 meilleurs
-        top_3_colnames = [col for col, val in top_3]
+        top_n_colnames = [col for col, val in top_n]
         # Extraire les valeurs des 3 meilleurs
-        top_3_values = [val for col, val in top_3]
+        top_n_values = [val for col, val in top_n]
         # Combiner les noms de colonnes et les valeurs dans un dictionnaire
         result = {}
         for i in range(Nb_Lists):
-            result[f"Top_{i+1}_List"] = top_3_colnames[i]
-            result[f"Top_{i+1}_%"] = top_3_values[i]
+            result[f"Top_{i+1}_List"] = top_n_colnames[i]
+            result[f"Top_{i+1}_%"] = top_n_values[i]
         return pd.Series(result)
        
     # Appliquer la fonction sur le DataFrame
-    top_3_results = data.apply(Top_Listes, axis=1)
+    top_n_results = data.apply(Top_Listes, axis=1)
 
     # Conserver les 15 premières colonnes du DataFrame original
-    columns_conserve = data.iloc[:, :15]
+    columns_conserve = data.iloc[:, :18]
 
     # Concaténer les résultats
-    Resultat = pd.concat([columns_conserve, top_3_results], axis=1)
+    Resultat = pd.concat([columns_conserve, top_n_results], axis=1)
 
     return Resultat
