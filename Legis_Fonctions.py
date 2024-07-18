@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import seaborn as sns
 from IPython.display import display, HTML
 import matplotlib.pyplot as plt
@@ -10,22 +9,18 @@ import geopandas as gpd
 from branca.element import Element
 
 # Fonction pour afficher des messages plus esthétiques
-def Tmess(message, Color='firebrick', Align='center', Size='14', Police='arial', Weight='normal', Style='italic'):
-    max_line_length = 150  # Longueur maximale d'une ligne avant de sauter à la ligne suivante
-    lines = []
-    current_line = ""
-    # Séparation du message en lignes en fonction de la longueur maximale
-    for mot in message.split():
-        if len(current_line + mot) <= max_line_length:
-            current_line += mot + " "
-        else:
-            lines.append(current_line.strip())
-            current_line = mot + " "
-    # Ajoute la dernière ligne restante
-    lines.append(current_line.strip())
+def Tmess(message, Color='black', Align='left', Size='10', Police='arial', Weight='normal', Style='normal'):
+    # Remplacement des sauts de ligne par des balises <br>
+    message = message.replace("\n", "<br>")
+    
     # Formatage du message avec les balises HTML appropriées
-    formatted_lines = "<br>".join(lines)
-    styled_message = '<div style="text-align: {};"><span style="font-weight: {}; font-style: {}; color: {}; font-size: {}pt; font-family: {};">{}</span></div>'.format(Align, Weight, Style, Color, Size, Police, formatted_lines)
+    styled_message = (
+        f'<div style="text-align: {Align};">'
+        f'<span style="font-weight: {Weight}; font-style: {Style}; color: {Color}; '
+        f'font-size: {Size}pt; font-family: {Police};">'
+        f'{message}</span></div>'
+    )
+    
     # Affichage du message formaté
     display(HTML(styled_message))
     
